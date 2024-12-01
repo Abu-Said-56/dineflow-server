@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5001;
 
@@ -28,8 +28,31 @@ async function run() {
     await client.connect();
 
 
+    const infoCollection = client.db('RestaurantDB').collection('DBInfo');
 
+    // get for all data from mongodb
+    app.get('/all-foods', async(req, res) =>{
+        const cursor = infoCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
 
+    // find data id wise for show details
+    app.get('/all-foods/:id', async(req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id)};
+
+        const options = {
+          // Include only the `title` and `imdb` fields in each returned document
+            projection: {  name: 1, image: 1, category: 1,  quantity: 1, madeBy: 1, foodOrig :1, description: 1 },
+          };
+      
+
+        const result = await infoCollection.findOne(query);
+        res.send(result);
+    })
+
+    // For Parchase 
     
 
     // Send a ping to confirm a successful connection
